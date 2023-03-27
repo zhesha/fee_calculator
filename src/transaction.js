@@ -1,13 +1,5 @@
-const dayjs = require("dayjs");
-const weekOfYear = require("dayjs/plugin/weekOfYear");
-const en = require("dayjs/locale/en");
+const calculateWeekFromEpoch = require("./utils/calculateWeekFromEpoch");
 const config = require("./config");
-
-dayjs.locale({
-  ...en,
-  weekStart: 1,
-});
-dayjs.extend(weekOfYear);
 
 function isValidTransaction(transaction) {
   const {
@@ -73,8 +65,8 @@ function calculateFeeForTransaction(transaction, usersTotal) {
   if (!isValidTransaction(transaction)) {
     throw new Error(`Invalid transaction: ${JSON.stringify(transaction)}`);
   }
-  const day = dayjs(date);
-  if (!day.isValid()) {
+  const week = calculateWeekFromEpoch(date);
+  if (week == null) {
     throw new Error(`Invalid date: ${date}`);
   }
   if (type === "cash_in") {
@@ -83,7 +75,7 @@ function calculateFeeForTransaction(transaction, usersTotal) {
   if (userType === "juridical") {
     return calculateJuridicalCashOutFee(operation.amount);
   }
-  const total = usersTotal.getTotal(userId, day.week());
+  const total = usersTotal.getTotal(userId, week);
   return calculateNaturalCashOutFee(operation.amount, total);
 }
 

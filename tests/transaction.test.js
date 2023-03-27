@@ -1,5 +1,6 @@
 const calculateFeeForTransaction = require("../src/transaction.js");
 const createUsersTotal = require("../src/usersTotal.js");
+const calculateFeeFromEpoch = require("../src/utils/calculateWeekFromEpoch.js");
 const cashIn = require("./test_data/cash_in.json");
 const juridicalCashOut = require("./test_data/juridical_cash_out.json");
 const naturalCashOut = require("./test_data/natural_cash_out.json");
@@ -41,12 +42,18 @@ describe("calculate for natural user cash out", () => {
   });
 
   test("previous total is not empty", () => {
-    usersTotal.getTotal(1, 1).amount = 100;
+    usersTotal.getTotal(
+      1,
+      calculateFeeFromEpoch(naturalCashOut.date)
+    ).amount = 100;
     expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(0);
   });
 
   test("previous total is more then limit", () => {
-    usersTotal.getTotal(1, 1).amount = 1100;
+    usersTotal.getTotal(
+      1,
+      calculateFeeFromEpoch(naturalCashOut.date)
+    ).amount = 1100;
     expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(0.9);
   });
 
@@ -60,7 +67,10 @@ describe("calculate for natural user cash out", () => {
   });
 
   test("previous total is less then limit, but sum is more then limit", () => {
-    usersTotal.getTotal(1, 1).amount = 500;
+    usersTotal.getTotal(
+      1,
+      calculateFeeFromEpoch(naturalCashOut.date)
+    ).amount = 500;
     const transaction = { ...naturalCashOut };
     transaction.operation = {
       amount: 800,
