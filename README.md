@@ -37,3 +37,11 @@ Prettier used for code formatting, before any commit run
 ```
 npm run prettify
 ```
+
+# ESLint
+
+ESLint can show code problems and errors
+
+```
+npm run lint
+```
