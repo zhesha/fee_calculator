@@ -1,4 +1,4 @@
-function createUsersTotal () {
+function createUsersTotal() {
   const userTotalPerWeek = {};
   return {
     getTotal: (userId, week) => {
@@ -8,11 +8,14 @@ function createUsersTotal () {
       if (!userTotalPerWeek[userId][week]) {
         userTotalPerWeek[userId][week] = {
           amount: 0,
+          add: (amount) => {
+            this.amount += amount;
+          },
         };
       }
       return userTotalPerWeek[userId][week];
-    }
-  }
+    },
+  };
 }
 
 module.exports = createUsersTotal;

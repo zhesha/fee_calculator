@@ -37,23 +37,17 @@ test("calculate for juridical user cash out, fall short limit", () => {
 
 describe("calculate for natural user cash out", () => {
   test("previous total is empty", () => {
-    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(
-      0
-    );
+    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(0);
   });
 
   test("previous total is not empty", () => {
     usersTotal.getTotal(1, 1).amount = 100;
-    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(
-      0
-    );
+    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(0);
   });
 
   test("previous total is more then limit", () => {
     usersTotal.getTotal(1, 1).amount = 1100;
-    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(
-      0.9
-    );
+    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(0.9);
   });
 
   test("previous total is empty, amount is more then limit", () => {

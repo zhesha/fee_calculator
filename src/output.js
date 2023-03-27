@@ -1,4 +1,4 @@
-const makeRounding = require("../utils/makeRounding");
+const makeRounding = require("./utils/makeRounding");
 
 function showFees(feesList) {
   feesList.forEach((element) => {
