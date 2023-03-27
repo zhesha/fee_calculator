@@ -1,3 +1,4 @@
+const config = require("./config.js");
 const dayjs = require("dayjs");
 const weekOfYear = require("dayjs/plugin/weekOfYear");
 const en = require("dayjs/locale/en");
@@ -73,12 +74,13 @@ function isValidTransaction(transaction) {
 }
 
 function calculateCashInFee(amount) {
-  const fee = amount * 0.0003;
-  return fee > 5 ? 5 : fee;
+  const fee = amount * config.cashIn.percents / 100;
+  const max = config.cashIn.max.amount;
+  return fee > max ? max : fee;
 }
 
 function calculateNaturalCashOutFee(amount, total) {
-  let freeAmount = 1000 - total.amount;
+  let freeAmount = config.cashOutNatural.week_limit.amount - total.amount;
   if (freeAmount <= 0) {
     freeAmount = 0;
   }
@@ -86,12 +88,13 @@ function calculateNaturalCashOutFee(amount, total) {
   if (freeAmount > amount) {
     return 0;
   }
-  return (amount - freeAmount) * 0.003;
+  return (amount - freeAmount) * config.cashOutNatural.percents/100;
 }
 
 function calculateJuridicalCashOutFee(amount) {
-  const fee = amount * 0.003;
-  return fee < 0.5 ? 0.5 : fee;
+  const fee = amount * config.cashOutJuridical.percents / 100;
+  const min = config.cashOutJuridical.min.amount;
+  return fee < min ? min : fee;
 }
 
 module.exports = calculateFeeForTransaction;
