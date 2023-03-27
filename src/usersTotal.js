@@ -8,7 +8,7 @@ function createUsersTotal() {
       if (!userTotalPerWeek[userId][week]) {
         userTotalPerWeek[userId][week] = {
           amount: 0,
-          add: (amount) => {
+          add: function (amount) {
             this.amount += amount;
           },
         };

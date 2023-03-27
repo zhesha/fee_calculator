@@ -68,6 +68,16 @@ describe("calculate for natural user cash out", () => {
     };
     expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(0.9);
   });
+
+  test("handle few transactions", () => {
+    const transaction = { ...naturalCashOut };
+    transaction.operation = {
+      amount: 800,
+      currency: "EUR",
+    };
+    expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(0);
+    expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(1.8);
+  });
 });
 
 describe("invalid transaction", () => {
