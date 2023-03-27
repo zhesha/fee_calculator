@@ -1,10 +1,16 @@
 const calculateFeeForTransaction = require("../src/transaction.js");
+const createUsersTotal = require("../src/usersTotal.js");
 const cashIn = require("./test_data/cash_in.json");
 const juridicalCashOut = require("./test_data/juridical_cash_out.json");
 const naturalCashOut = require("./test_data/natural_cash_out.json");
 
+let usersTotal = createUsersTotal();
+beforeEach(() => {
+  usersTotal = createUsersTotal();
+});
+
 test("calculate for cash in", () => {
-  expect(calculateFeeForTransaction(cashIn)).toBe(0.06);
+  expect(calculateFeeForTransaction(cashIn, usersTotal)).toBe(0.06);
 });
 
 test("calculate for cash in with limit exceeded", () => {
@@ -13,11 +19,11 @@ test("calculate for cash in with limit exceeded", () => {
     amount: 1000000,
     currency: "EUR",
   };
-  expect(calculateFeeForTransaction(transaction)).toBe(5);
+  expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(5);
 });
 
 test("calculate for juridical user cash out", () => {
-  expect(calculateFeeForTransaction(juridicalCashOut)).toBe(0.9);
+  expect(calculateFeeForTransaction(juridicalCashOut, usersTotal)).toBe(0.9);
 });
 
 test("calculate for juridical user cash out, fall short limit", () => {
@@ -26,39 +32,26 @@ test("calculate for juridical user cash out, fall short limit", () => {
     amount: 10,
     currency: "EUR",
   };
-  expect(calculateFeeForTransaction(transaction)).toBe(0.5);
+  expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(0.5);
 });
 
 describe("calculate for natural user cash out", () => {
-  let userTotalPerWeek = {};
-  beforeEach(() => {
-    userTotalPerWeek = {};
-  });
-
   test("previous total is empty", () => {
-    expect(calculateFeeForTransaction(naturalCashOut, userTotalPerWeek)).toBe(
+    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(
       0
     );
   });
 
   test("previous total is not empty", () => {
-    userTotalPerWeek[1] = {
-      1: {
-        amount: 100,
-      },
-    };
-    expect(calculateFeeForTransaction(naturalCashOut, userTotalPerWeek)).toBe(
+    usersTotal.getTotal(1, 1).amount = 100;
+    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(
       0
     );
   });
 
   test("previous total is more then limit", () => {
-    userTotalPerWeek[1] = {
-      1: {
-        amount: 1100,
-      },
-    };
-    expect(calculateFeeForTransaction(naturalCashOut, userTotalPerWeek)).toBe(
+    usersTotal.getTotal(1, 1).amount = 1100;
+    expect(calculateFeeForTransaction(naturalCashOut, usersTotal)).toBe(
       0.9
     );
   });
@@ -69,21 +62,17 @@ describe("calculate for natural user cash out", () => {
       amount: 1300,
       currency: "EUR",
     };
-    expect(calculateFeeForTransaction(transaction, userTotalPerWeek)).toBe(0.9);
+    expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(0.9);
   });
 
   test("previous total is less then limit, but sum is more then limit", () => {
-    userTotalPerWeek[1] = {
-      1: {
-        amount: 500,
-      },
-    };
+    usersTotal.getTotal(1, 1).amount = 500;
     const transaction = { ...naturalCashOut };
     transaction.operation = {
       amount: 800,
       currency: "EUR",
     };
-    expect(calculateFeeForTransaction(transaction, userTotalPerWeek)).toBe(0.9);
+    expect(calculateFeeForTransaction(transaction, usersTotal)).toBe(0.9);
   });
 });
 

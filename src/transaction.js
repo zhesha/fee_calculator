@@ -8,7 +8,7 @@ dayjs.locale({
 });
 dayjs.extend(weekOfYear);
 
-function calculateFeeForTransaction(transaction, userTotalPerWeek) {
+function calculateFeeForTransaction(transaction, usersTotal) {
   const {
     date,
     user_id: userId,
@@ -29,19 +29,8 @@ function calculateFeeForTransaction(transaction, userTotalPerWeek) {
   if (userType === "juridical") {
     return calculateJuridicalCashOutFee(operation.amount);
   }
-  if (!userTotalPerWeek[userId]) {
-    userTotalPerWeek[userId] = {};
-  }
-  const week = day.week();
-  if (!userTotalPerWeek[userId][week]) {
-    userTotalPerWeek[userId][week] = {
-      amount: 0,
-    };
-  }
-  return calculateNaturalCashOutFee(
-    operation.amount,
-    userTotalPerWeek[userId][week]
-  );
+  const total = usersTotal.getTotal(userId, day.week());
+  return calculateNaturalCashOutFee(operation.amount, total);
 }
 
 function isValidTransaction(transaction) {
