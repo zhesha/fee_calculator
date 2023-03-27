@@ -1,22 +1,45 @@
+const dayjs = require('dayjs')
+const weekOfYear = require('dayjs/plugin/weekOfYear')
+const en = require('dayjs/locale/en');
+dayjs.locale({
+  ...en,
+  weekStart: 1,
+});
+dayjs.extend(weekOfYear)
+
 function calculateFees(input) {
   if (!Array.isArray(input)) {
     throw new Error("Input data must be an array with transactions");
   }
-  const feesList = input.map((transaction) => calculateFeeForTransaction(transaction));
+  const userTotalPerWeek = {};
+  const feesList = input.map((transaction) => calculateFeeForTransaction(transaction, userTotalPerWeek));
   return feesList;
 }
 
-function calculateFeeForTransaction(transaction) {
+function calculateFeeForTransaction(transaction, userTotalPerWeek) {
   const { date, user_id: userId, user_type: userType, type, operation } = transaction;
   if (!isValidTransaction(transaction)) {
     throw new Error(`Invalid transaction: ${JSON.stringify(transaction)}`);
+  }
+  const day = dayjs(date);
+  if (!day.isValid()) {
+    throw new Error(`Invalid date: ${date}`);
   }
   if (type === "cash_in") {
     return calculateCashInFee(operation.amount);
   }
   if (type === "cash_out") {
     if (userType === "natural") {
-      return calculateNaturalCashOutFee(date, userId, operation.amount);
+      if (!userTotalPerWeek[userId]) {
+        userTotalPerWeek[userId] = {};
+      }
+      const week = day.week();
+      if (!userTotalPerWeek[userId][week]) {
+        userTotalPerWeek[userId][week] = {
+          amount: 0,
+        };
+      }
+      return calculateNaturalCashOutFee(operation.amount, userTotalPerWeek[userId][week]);
     }
     if (userType === "juridical") {
       return calculateJuridicalCashOutFee(operation.amount);
@@ -46,9 +69,16 @@ function calculateCashInFee(amount) {
   return fee > 5 ? 5 : fee;
 }
 
-function calculateNaturalCashOutFee(date, userId, amount) {
-  const fee = amount * 0.003;
-  return fee;
+function calculateNaturalCashOutFee(amount, total) {
+  let freeAmount = 1000 - total.amount;
+  if (freeAmount <= 0) {
+    freeAmount = 0;
+  }
+  total.amount += amount;
+  if (freeAmount > amount) {
+    return 0;
+  }
+  return (amount - freeAmount) * 0.003;
 }
 
 function calculateJuridicalCashOutFee(amount) {
