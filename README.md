@@ -45,3 +45,7 @@ ESLint can show code problems and errors
 ```
 npm run lint
 ```
+
+# API
+This solution does not request configuration from API because task states that non refrain to a customer should be used. And API path have a customer name.
+Task took approximately half of a day.
